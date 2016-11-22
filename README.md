@@ -19,10 +19,21 @@ Note that some components (e.g. database) can be shared by both deployment group
   - The **random** policy (default one) chooses randomly a deployment group according to the partition weights unless the user is already assigned to a valid deployment group (e.g. with a cookie).
   - The **header_authorization** policy applies a mathematical operation on the Authorization header value to select a deployment group according to the partition weights; it aims that each client always targets the same deployment group. This policy can be useful for APIs where cookies do not make sense. 
 
-## Create the docker image
+## Build and publish the docker image
 
 ```sh
-docker build -t nginx-canary .
+# Create git tag with nginx-canary version (e.g. 1.0.0)
+export VERSION=1.0.0
+git tag -a $VERSION -m "$VERSION"
+git push origin $VERSION
+# Build the docker image
+docker build -t telefonica/nginx-canary:$VERSION --label "version=$VERSION" .
+# Log in to docker hub and publish the image
+docker login
+docker push telefonica/nginx-canary:$VERSION
+# Tag this version as "latest"
+docker tag telefonica/nginx-canary:$VERSION telefonica/nginx-canary:latest
+docker push telefonica/nginx-canary:latest
 ```
 
 ## Run the docker image
@@ -32,7 +43,7 @@ docker run --name nginx-canary \
            --restart always \
            -p "0.0.0.0:8080:8080" \
            -v "/var/log/nginx:/var/log/nginx" \
-           -d nginx-canary
+           -d telefonica/nginx-canary
 ```
 
 **NOTE**: See [Set up a virtual server](#set-up-a-virtual-server) to customize the default virtual server configuration.
@@ -49,7 +60,7 @@ docker run --name nginx-canary \
            -e "PARTITION_LATEST=80" \
            -e "VERSION_CANARY=1.0.0" \
            -e "VERSION_LATEST=1.0.0" \
-           -d nginx-canary
+           -d telefonica/nginx-canary
 ```
 
 ## Configure canary release
@@ -59,7 +70,7 @@ The script `/usr/bin/nginx-canary.sh` enables to modify the default configuratio
 The following example sets up a domain `your-site.com`, required for cookies, and configures the versions and distributions weights for two deployment groups: `canary` and `latest`. 
 
 ```sh
-docker exec -t nginx-canary nginx-canary.sh \
+docker exec -t telefonica/nginx-canary nginx-canary.sh \
             --domain=your-site.com \
             --partition-canary=20 \
             --partition-latest=80 \
@@ -75,7 +86,7 @@ This configuration is stored in the docker volume `/etc/nginx/canary` with a dou
 Once the partitions are initialized, when a newer version is deployed in canary (e.g. 1.0.1), nginx can be reconfigured with the same command:
 
 ```sh
-docker exec -t nginx-canary nginx-canary.sh \
+docker exec -t telefonica/nginx-canary nginx-canary.sh \
             --version-canary=1.0.1
 ```
 The canary configuration properties are:
@@ -137,7 +148,7 @@ docker run --name nginx-canary \
            -p "0.0.0.0:8080:8080" \
            -v "/etc/nginx/conf.d:/etc/nginx/conf.d" \
            -v "/var/log/nginx:/var/log/nginx" \
-           -d nginx-canary
+           -d telefonica/nginx-canary
 ```
 
 ## License
