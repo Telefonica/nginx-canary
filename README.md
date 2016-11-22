@@ -2,10 +2,22 @@
 
 nginx with canary release support.
 
-**Canary release** is a strategy to reduce the risk of releasing a new version to production. The new version is offered to a reduced subset of production users so that it is possible to get feedback from real users. If the version is finally considered wrong, it is possible to roll back or fix the problems with the advantage of not affecting to all users. On the other hand, if the version is considered stable, it can be promoted so that all users can get benefit from it.
+**Canary release** is a strategy to reduce the risk of releasing a new version to production. The new version is offered to a reduced subset of production users so that it is possible to get feedback from real users. If the version is finally considered wrong, it is possible to roll back or fix the problems with the advantage of affecting just a small percentage of the users. On the other hand, if the version is considered stable, it can be promoted so that all users can get benefit from it.
 
+The following picture presents a canary release case with 2 deployment groups: **canary** and **latest**. Only a 20% of users are assigned to the canary deployment group, with the latest version 1.0.1. The other 80% are linked to the latest deployment group, with version 1.0.0. 
 
+![Canary Release](images/canary.png)
 
+Note that some components (e.g. database) can be shared by both deployment groups.
+
+## Features
+
+- nginx with **canary release support** (logic implemented with lua scripts).
+- **HTTP cookies** let users track a specific deployment group and/or software version. When the deployment group changes the software version, nginx tries to select another deployment group with the same version so that the user maintains the same experience as long as possible; if not available, then the user is assigned a new deployment group and software version. 
+- A user can **force a deployment group** either with a query parameter or an HTTP header.
+- There are 2 **policies** to assign a deployment group to a user:
+  - The **random** policy (default one) chooses randomly a deployment group according to the partition weights unless the user is already assigned to a valid deployment group (e.g. with a cookie).
+  - The **header_authorization** policy applies a mathematical operation on the Authorization header value to select a deployment group according to the partition weights; it aims that each client always targets the same deployment group. This policy can be useful for APIs where cookies do not make sense. 
 
 ## Create the docker image
 
@@ -72,7 +84,7 @@ The canary configuration properties are:
 | -------- | -------------------- | ---- | ------------- | ----------- |
 | domain | DOMAIN | string | localhost | Server domain. It is used for the cookies. |
 | cookies | COOKIES | boolean | true | If true, the deployment group and version allocated to a user are stored in cookies. It is recommended for web portals. However, it does not make sense for REST/SOAP APIs because API clients do not usually maintain cookies. | 
-| policy | POLICY | | string | random | Two policies are implemented: **random** where the partition is randomly selected according to the partition weights configured for the deployment groups, and **header_authorization** where the partition is calculated from a mathematical operation with the Authorization header so that the same credentials target the same deployment group. |
+| policy | POLICY | string | random | Two policies are implemented: **random** where the partition is randomly selected according to the partition weights configured for the deployment groups, and **header_authorization** where the partition is calculated from a mathematical operation with the Authorization header so that the same credentials target the same deployment group. |
 | routing-header | ROUTING_HEADER | string | Deployment-Group | Name of the HTTP header to force the selection of a specific deployment group. Set this property to empty to forbid this choice. |
 | routing-query-param | ROUTING_QUERY_PARAM | string | deployment_group | Name of the query parameter to force the selection of a specific deployment group. Set this property to empty to forbid this choice. |
 | partition-* | PARTITION-* | integer | - | Identifies the partition weight for this deployment group |
