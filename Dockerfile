@@ -59,19 +59,6 @@ ARG CONFIG="\
 	"
 
 RUN \
-  apk add --no-cache lua luajit \
-  && apk add --no-cache --virtual .build-deps \
-    lua-dev \
-    luajit-dev \
-		curl \
-  && curl -fSL https://github.com/simpl/ngx_devel_kit/archive/v${NDK_VERSION}.tar.gz -o ngx_devel_kit-${NDK_VERSION}.tar.gz \
-  && curl -fSL https://github.com/openresty/lua-nginx-module/archive/v${LUA_NGINX_VERSION}.tar.gz -o lua-nginx-module-${LUA_NGINX_VERSION}.tar.gz \
-	&& mkdir -p /usr/src \
-  && tar -zxC /usr/src -f ngx_devel_kit-${NDK_VERSION}.tar.gz \
-  && tar -zxC /usr/src -f lua-nginx-module-${LUA_NGINX_VERSION}.tar.gz \
-	&& rm ngx_devel_kit-${NDK_VERSION}.tar.gz \
-	&& rm lua-nginx-module-${LUA_NGINX_VERSION}.tar.gz \
-
 	&& addgroup -S nginx \
 	&& adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G nginx nginx \
 	&& apk add --no-cache lua luajit gettext bash \
