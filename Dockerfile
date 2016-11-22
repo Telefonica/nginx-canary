@@ -59,7 +59,7 @@ ARG CONFIG="\
 	"
 
 RUN \
-	&& addgroup -S nginx \
+	addgroup -S nginx \
 	&& adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G nginx nginx \
 	&& apk add --no-cache lua luajit gettext bash \
 	&& apk add --no-cache --virtual .build-deps \
