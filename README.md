@@ -151,6 +151,20 @@ docker run --name nginx-canary \
            -d telefonica/nginx-canary
 ```
 
+The Dockerfile is configured to expose port 8080. However, if the virtual server listens to a different port (e.g. 443) or multiple virtual servers are configured, then the argument `--expose` is required. For example, if there are 2 virtual servers at ports 80 and 443:
+
+```sh
+docker run --name nginx-canary \
+           --restart always \
+           --expose=80 \
+           --expose=443 \
+           -p "80:80" \
+           -p "443:443" \
+           -v "/etc/nginx/conf.d:/etc/nginx/conf.d" \
+           -v "/var/log/nginx:/var/log/nginx" \
+           -d telefonica/nginx-canary
+``` 
+
 ## License
 
 Copyright 2016 [Telefónica Investigación y Desarrollo, S.A.U](http://www.tid.es)

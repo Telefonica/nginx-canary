@@ -136,6 +136,6 @@ ADD *.sh /usr/bin/
 
 VOLUME /etc/nginx/conf.d /etc/nginx/versions /var/log/nginx
 
-EXPOSE 8080 8081 8082 8083 8084
+EXPOSE 8080
 
 ENTRYPOINT ["/usr/bin/nginx-docker-entrypoint.sh"]
