@@ -70,7 +70,7 @@ The script `/usr/bin/nginx-canary.sh` enables to modify the default configuratio
 The following example sets up a domain `your-site.com`, required for cookies, and configures the versions and distributions weights for two deployment groups: `canary` and `latest`. 
 
 ```sh
-docker exec -t telefonica/nginx-canary nginx-canary.sh \
+docker exec -t nginx-canary nginx-canary.sh \
             --domain=your-site.com \
             --partition-canary=20 \
             --partition-latest=80 \
@@ -86,7 +86,7 @@ This configuration is stored in the docker volume `/etc/nginx/canary` with a dou
 Once the partitions are initialized, when a newer version is deployed in canary (e.g. 1.0.1), nginx can be reconfigured with the same command:
 
 ```sh
-docker exec -t telefonica/nginx-canary nginx-canary.sh \
+docker exec -t nginx-canary nginx-canary.sh \
             --version-canary=1.0.1
 ```
 The canary configuration properties are:
