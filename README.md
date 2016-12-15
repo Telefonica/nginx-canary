@@ -70,7 +70,7 @@ The script `/usr/bin/nginx-canary.sh` enables to modify the default configuratio
 The following example sets up a domain `your-site.com`, required for cookies, and configures the versions and distributions weights for two deployment groups: `canary` and `latest`. 
 
 ```sh
-docker exec -t telefonica/nginx-canary nginx-canary.sh \
+docker exec -t nginx-canary nginx-canary.sh \
             --domain=your-site.com \
             --partition-canary=20 \
             --partition-latest=80 \
@@ -86,7 +86,7 @@ This configuration is stored in the docker volume `/etc/nginx/canary` with a dou
 Once the partitions are initialized, when a newer version is deployed in canary (e.g. 1.0.1), nginx can be reconfigured with the same command:
 
 ```sh
-docker exec -t telefonica/nginx-canary nginx-canary.sh \
+docker exec -t nginx-canary nginx-canary.sh \
             --version-canary=1.0.1
 ```
 The canary configuration properties are:
@@ -150,6 +150,20 @@ docker run --name nginx-canary \
            -v "/var/log/nginx:/var/log/nginx" \
            -d telefonica/nginx-canary
 ```
+
+The Dockerfile is configured to expose port 8080. However, if the virtual server listens to a different port (e.g. 443) or multiple virtual servers are configured, then the argument `--expose` is required. For example, if there are 2 virtual servers at ports 80 and 443:
+
+```sh
+docker run --name nginx-canary \
+           --restart always \
+           --expose=80 \
+           --expose=443 \
+           -p "80:80" \
+           -p "443:443" \
+           -v "/etc/nginx/conf.d:/etc/nginx/conf.d" \
+           -v "/var/log/nginx:/var/log/nginx" \
+           -d telefonica/nginx-canary
+``` 
 
 ## License
 

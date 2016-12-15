@@ -14,6 +14,37 @@ parse_args() {
   done
 }
 
+# Prepare a regular expression by escaping characters: []"
+# The regular expression is in the form: ^$1.* where $1 has been escaped.
+# For example, passing config["partitions"]["canary"] would create ^config\[\"partitions\"\]\[\"canary\"\].*
+#
+# Input parameters:
+# - $1: value to be escaped
+prepare_regex() {
+  local regex=$1
+  for i in [ ] \" ; do
+    regex="${regex//$i/\\$i}"
+  done
+  echo "^$regex.*"
+}
+
+# Set a lua variable in a file.
+#
+# Input parameters:
+# - $1: lua file where the variable is set 
+# - $2: variable name (e.g. config["partitions"]["canary"])
+# - $3: variable value (e.g. 20)
+set_lua_var() {
+  local file=$1
+  local param_key=$2
+  local param_value=$3
+  local regex=$(prepare_regex "$param_key") 
+  local value="$param_key = $param_value"
+  grep -q "$regex" "$file" \
+    && sed -i "s/$regex/$value/g" "$file" \
+    || sed -i "/^return /i $value" "$file"
+}
+
 # Set a version for a deployment group in file /etc/nginx/canary/versions.lua.
 # If the file already has this deployment group, it updates the value. Otherwise, it adds a new line with
 # the version for the deployment group.
@@ -24,12 +55,7 @@ parse_args() {
 set_version() {
   local deployment_group=$1
   local version=$2
-  local regex="^versions\[\"$deployment_group\"\].*" 
-  local value="versions[\"$deployment_group\"] = \"$version\""
-  grep -q "$regex" "$VERSIONS_FILE" \
-    && sed -i "s/$regex/$value/g" "$VERSIONS_FILE" \
-    || sed -i "/^return versions$/i \
-                  $value" "$VERSIONS_FILE"
+  set_lua_var "$VERSIONS_FILE" "versions[\"$deployment_group\"]" "\"$version\""
 }
 
 # Get all environment variables starting with "VERSION_" (e.g. VERSION_CANARY), extract the deployment group
@@ -44,21 +70,28 @@ set_versions() {
   done
 }
 
-# Set a configuration parameter in file /etc/nginx/canary/config.lua.
+# Set a string configuration parameter in file /etc/nginx/canary/config.lua.
 # Note that partitions use set_config_partition function.
 #
 # Input parameters:
-# - $1: configuration parameter key: domain, cookies, policy, routing_header or routing_query_param
+# - $1: configuration parameter key: domain, policy, routing_header or routing_query_param
 # - $2: configuration parameter value
-set_config_param() {
+set_config_string_param() {
   local param_key=$1
   local param_value=$2
-  local regex="^config\[\"$param_key\"\].*" 
-  local value="config[\"$param_key\"] = \"$param_value\""
-  grep -q "$regex" "$CONFIG_FILE" \
-    && sed -i "s/$regex/$value/g" "$CONFIG_FILE" \
-    || sed -i "/^return config$/i \
-                  $value" "$CONFIG_FILE"
+  set_lua_var "$CONFIG_FILE" "config[\"$param_key\"]" "\"$param_value\""
+}
+
+# Set the non string configuration parameters in file /etc/nginx/canary/config.lua.
+# Not using set_config_string_param because it is boolean or number.
+#
+# Input parameters:
+# - $1: configuration parameter key: cookies
+# - $2: configuration parameter value (e.g. true)
+set_config_nonstring_param() {
+  local param_key=$1
+  local param_value=$2
+  set_lua_var "$CONFIG_FILE" "config[\"$param_key\"]" "$param_value"
 }
 
 # Set a configuration partition in file /etc/nginx/canary/config.lua.
@@ -69,12 +102,7 @@ set_config_param() {
 set_config_partition() {
   local param_key=$1
   local param_value=$2
-  local regex="^config\[\"partitions\"\]\[\"$param_key\"\].*" 
-  local value="config[\"partitions\"][\"$param_key\"] = \"$param_value\""
-  grep -q "$regex" "$CONFIG_FILE" \
-    && sed -i "s/$regex/$value/g" "$CONFIG_FILE" \
-    || sed -i "/^return config$/i \
-                  $value" "$CONFIG_FILE"
+  set_lua_var "$CONFIG_FILE" "config[\"partitions\"][\"$param_key\"]" "$param_value"
 }
 
 # Update the configuration file /etc/nginx/canary/config.lua with the partitions from environment variables PARTITION_*.
@@ -101,11 +129,18 @@ set_config_partitions() {
 # - ROUTING_HEADER (by default, Deployment-Group)
 # - ROUTING_QUERY_PARAM (empty value by default)
 set_config() {
-  for config_var in DOMAIN COOKIES POLICY ROUTING_HEADER ROUTING_QUERY_PARAM; do
+  for config_var in DOMAIN POLICY ROUTING_HEADER ROUTING_QUERY_PARAM; do
     if [ ! -z ${!config_var+x} ]; then
       local config_key="$(echo $config_var | tr '[:upper:]' '[:lower:]')"
       local config_value="${!config_var}"
-      set_config_param "$config_key" "$config_value"
+      set_config_string_param "$config_key" "$config_value"
+    fi
+  done
+  for config_var in COOKIES; do
+    if [ ! -z ${!config_var+x} ]; then
+      local config_key="$(echo $config_var | tr '[:upper:]' '[:lower:]')"
+      local config_value="${!config_var}"
+      set_config_nonstring_param "$config_key" "$config_value"
     fi
   done
 }
