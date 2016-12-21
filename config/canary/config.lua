@@ -1,5 +1,5 @@
 local config = {}
-config["domain"] = "localhost"
+config["domain"] = ""
 config["cookies"] = true
 config["policy"] = "random"
 config["routing_header"] = "Deployment-Group"

@@ -123,7 +123,7 @@ set_config_partitions() {
 }
 
 # Update the configuration file /etc/nginx/canary/config.lua from environment variables:
-# - DOMAIN (by default, localhost)
+# - DOMAIN (by default, "")
 # - COOKIES (by default, true)
 # - POLICY (by default, random)
 # - ROUTING_HEADER (by default, Deployment-Group)
