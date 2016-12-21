@@ -93,7 +93,7 @@ The canary configuration properties are:
 
 | PROPERTY | ENVIRONMENT VARIABLE | TYPE | DEFAULT VALUE | DESCRIPTION |
 | -------- | -------------------- | ---- | ------------- | ----------- |
-| domain | DOMAIN | string | localhost | Server domain. It is used for the cookies. |
+| domain | DOMAIN | string | "" | Server domain. It is used for the cookies. |
 | cookies | COOKIES | boolean | true | If true, the deployment group and version allocated to a user are stored in cookies. It is recommended for web portals. However, it does not make sense for REST/SOAP APIs because API clients do not usually maintain cookies. | 
 | policy | POLICY | string | random | Two policies are implemented: **random** where the partition is randomly selected according to the partition weights configured for the deployment groups, and **header_authorization** where the partition is calculated from a mathematical operation with the Authorization header so that the same credentials target the same deployment group. |
 | routing-header | ROUTING_HEADER | string | Deployment-Group | Name of the HTTP header to force the selection of a specific deployment group. Set this property to empty to forbid this choice. |

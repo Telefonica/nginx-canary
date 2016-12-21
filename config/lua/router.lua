@@ -37,7 +37,11 @@ end
 
 -- Create cookies to store deployment_group and deployment version
 function create_cookies(deployment_version, deployment_group, domain)
-  local common_data_cookie = ";path=/;HttpOnly;domain=." .. domain
+  -- If domain is empty (localhost) or the domain is already prefixed with a dot, do not prepend a dot
+  if domain ~= "" and domain:sub(1, 1) ~= "." then
+    domain = "." .. domain
+  end
+  local common_data_cookie = ";path=/;HttpOnly;domain=" .. domain
                           .. ";Expires=" .. ngx.cookie_time(ngx.time() + 3600 * 24 * 365)
   local deployment_group_cookie =  "deployment_group=" .. deployment_group
                                     .. common_data_cookie
