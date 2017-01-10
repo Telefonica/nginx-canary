@@ -134,7 +134,7 @@ RUN \
 ADD config /etc/nginx/
 ADD *.sh /usr/bin/
 
-VOLUME /etc/nginx/conf.d /var/log/nginx
+VOLUME /etc/nginx/conf.d /etc/nginx/lua /var/log/nginx
 
 EXPOSE 8080
 
