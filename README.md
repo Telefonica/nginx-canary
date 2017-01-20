@@ -39,7 +39,7 @@ docker push telefonica/nginx-canary:latest
 ## Run the docker image
 
 ```sh
-mkdir -p /etc/nginx/canary
+mkdir -p /etc/nginx/canary /var/log/nginx
 
 docker run --name nginx-canary \
            --restart always \
@@ -56,7 +56,7 @@ docker run --name nginx-canary \
 You might configure the canary release properties as environment variables when launching the container:
 
 ```sh
-mkdir -p /etc/nginx/canary
+mkdir -p /etc/nginx/canary /var/log/nginx
 
 docker run --name nginx-canary \
            --restart always \
