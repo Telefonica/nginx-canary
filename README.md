@@ -39,18 +39,25 @@ docker push telefonica/nginx-canary:latest
 ## Run the docker image
 
 ```sh
+mkdir -p /etc/nginx/canary
+
 docker run --name nginx-canary \
            --restart always \
            -p "0.0.0.0:8080:8080" \
+           -v "/etc/nginx/canary:/etc/nginx/canary" \
            -v "/var/log/nginx:/var/log/nginx" \
            -d telefonica/nginx-canary
 ```
+
+**NOTE**: The volume `/etc/nginx/canary` stores the configuration of the canary release strategy (`/etc/nginx/canary/config.lua`) as well as the software version for each deployment group (`/etc/nginx/canary/`). If the host directory `/etc/nginx/canary` is not mounted into the container, this configuration is missed after a host restart.
 
 **NOTE**: See [Set up a virtual server](#set-up-a-virtual-server) to customize the default virtual server configuration.
 
 You might configure the canary release properties as environment variables when launching the container:
 
 ```sh
+mkdir -p /etc/nginx/canary
+
 docker run --name nginx-canary \
            --restart always \
            -p "0.0.0.0:8080:8080" \
@@ -63,8 +70,6 @@ docker run --name nginx-canary \
            -e "VERSION_LATEST=1.0.0" \
            -d telefonica/nginx-canary
 ```
-
-**NOTE**: The volume `/etc/nginx/canary` stores the configuration of the canary release strategy (`/etc/nginx/canary/config.lua`) as well as the software version for each deployment group (`/etc/nginx/canary/`). If the host directory `/etc/nginx/canary` is not mounted into the container, this configuration is missed after a host restart.
 
 ## Configure canary release
 
