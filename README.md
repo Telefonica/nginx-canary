@@ -39,21 +39,29 @@ docker push telefonica/nginx-canary:latest
 ## Run the docker image
 
 ```sh
+mkdir -p /etc/nginx/canary /var/log/nginx
+
 docker run --name nginx-canary \
            --restart always \
            -p "0.0.0.0:8080:8080" \
+           -v "/etc/nginx/canary:/etc/nginx/canary" \
            -v "/var/log/nginx:/var/log/nginx" \
            -d telefonica/nginx-canary
 ```
+
+**NOTE**: The volume `/etc/nginx/canary` stores the configuration of the canary release strategy (`/etc/nginx/canary/config.lua`) as well as the software version for each deployment group (`/etc/nginx/canary/`). If the host directory `/etc/nginx/canary` is not mounted into the container, this configuration is missed after a host restart.
 
 **NOTE**: See [Set up a virtual server](#set-up-a-virtual-server) to customize the default virtual server configuration.
 
 You might configure the canary release properties as environment variables when launching the container:
 
 ```sh
+mkdir -p /etc/nginx/canary /var/log/nginx
+
 docker run --name nginx-canary \
            --restart always \
            -p "0.0.0.0:8080:8080" \
+           -v "/etc/nginx/canary:/etc/nginx/canary" \
            -v "/var/log/nginx:/var/log/nginx" \
            -e "DOMAIN=your-site.com" \
            -e "PARTITION_CANARY=20" \
@@ -146,7 +154,8 @@ docker rm -f nginx-canary
 docker run --name nginx-canary \
            --restart always \
            -p "0.0.0.0:8080:8080" \
-           -v "/etc/nginx/conf.d:/etc/nginx/conf.d" \
+           -v "/etc/nginx/conf.d:/etc/nginx/conf.d:ro" \
+           -v "/etc/nginx/canary:/etc/nginx/canary" \
            -v "/var/log/nginx:/var/log/nginx" \
            -d telefonica/nginx-canary
 ```
@@ -160,14 +169,15 @@ docker run --name nginx-canary \
            --expose=443 \
            -p "80:80" \
            -p "443:443" \
-           -v "/etc/nginx/conf.d:/etc/nginx/conf.d" \
+           -v "/etc/nginx/conf.d:/etc/nginx/conf.d:ro" \
+           -v "/etc/nginx/canary:/etc/nginx/canary" \
            -v "/var/log/nginx:/var/log/nginx" \
            -d telefonica/nginx-canary
 ``` 
 
 ## License
 
-Copyright 2016 [Telefónica Investigación y Desarrollo, S.A.U](http://www.tid.es)
+Copyright 2016, 2017 [Telefónica Investigación y Desarrollo, S.A.U](http://www.tid.es)
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
