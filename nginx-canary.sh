@@ -1,7 +1,20 @@
-#!/bin/bash
+#!/bin/bash -e
 
-VERSIONS_FILE=/etc/nginx/canary/versions.lua
-CONFIG_FILE=/etc/nginx/canary/config.lua
+CANARY_DIR=/etc/nginx/canary
+VERSIONS_FILE=$CANARY_DIR/versions.lua
+CONFIG_FILE=$CANARY_DIR/config.lua
+
+LUA_DIR=/etc/nginx/lua
+DEFAULT_VERSIONS_FILE=$LUA_DIR/versions_default.lua
+DEFAULT_CONFIG_FILE=$LUA_DIR/config_default.lua
+
+# Check that /etc/nginx/canary/versions.lua and /etc/nginx/canary/config.lua exist. Otherwise, copy them
+# from default ones
+init_canary_config() {
+  [ -d $CANARY_DIR ] || mkdir -p $CANARY_DIR
+  [ -f $VERSIONS_FILE ] || cp $DEFAULT_VERSIONS_FILE $VERSIONS_FILE
+  [ -f $CONFIG_FILE ] || cp $DEFAULT_CONFIG_FILE $CONFIG_FILE
+}
 
 # Parse arguments from command line to assign them as environment variables
 parse_args() {
@@ -146,6 +159,7 @@ set_config() {
 }
 
 parse_args "$@"
+init_canary_config
 set_versions
 set_config
 set_config_partitions
