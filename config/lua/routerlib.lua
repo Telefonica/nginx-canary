@@ -1,5 +1,5 @@
-local config = require("/etc/nginx/lua/config")
-local versions = require("/etc/nginx/lua/versions")
+local config = require("config")
+local versions = require("versions")
 
 local module = {}
 
