@@ -1,5 +1,5 @@
-local config = require("config")
-local routerlib = require("routerlib")
+local config = require("/etc/nginx/lua/config")
+local routerlib = require("/etc/nginx/lua/routerlib")
 
 local deployment_group = nil
 local deployment_version = nil
